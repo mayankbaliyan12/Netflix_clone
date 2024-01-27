@@ -4,9 +4,10 @@ import MovieCard from "./MovieCard";
 const MovieList = ({ title, movies }) => {
   return (
     <div className="px-0">
-      <h1 className="text-lg md:text-3xl py-1 mx-2 text-white">{title}</h1>
-      <div className="flex overflow-x-scroll no-scrollbar">
+      <h1 className="text-lg md:text-3xl py-1 mx-2 text-white py-6 px-0">{title}</h1>
+      <div className="flex ">
         <div className="flex">
+          
           {movies?.map((movie) => (
             <MovieCard
               id={movie.id}
