@@ -9,8 +9,9 @@ import {
 import { auth } from "../utils/firebase";
 import { BG_URL } from "../utils/constants";
 import GoogleAuth from "../utils/GoogleAuth";
-import Checkbox from '@mui/material/Checkbox';
-import { green } from '@mui/material/colors';
+import Checkbox from "@mui/material/Checkbox";
+import { green } from "@mui/material/colors";
+import BusyIndicator from "../utils/BusyIndicator";
 
 const Login = () => {
   const label = { inputProps: { "aria-label": "Checkbox demo" } };
@@ -21,14 +22,20 @@ const Login = () => {
   const name = useRef(null);
   const email = useRef(null);
   const password = useRef(null);
+  const [busyIndicator, setBusyIndicator] = useState(false);
 
   const handleButtonClick = () => {
-    const message = checkValidData(email.current.value, password.current.value);
+    const message = checkValidData(
+      name?.current?.value,
+      email.current.value,
+      password.current.value
+    );
     setErrorMessage(message);
     if (message) return;
 
     if (!isSignInForm) {
       // Sign Up Logic
+      setBusyIndicator(true)
       createUserWithEmailAndPassword(
         auth,
         email.current.value,
@@ -40,18 +47,22 @@ const Login = () => {
             displayName: name.current.value,
             photoURL: "https://cdn-icons-png.flaticon.com/512/2566/2566166.png",
           })
+          setBusyIndicator(false)
             .then(() => {})
             .catch((error) => {
               setErrorMessage(error.message);
+              
             });
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
           setErrorMessage(errorCode + "-" + errorMessage);
+          setBusyIndicator(false)
         });
     } else {
       // Sign In Logic
+      setBusyIndicator(true)
       signInWithEmailAndPassword(
         auth,
         email.current.value,
@@ -61,11 +72,13 @@ const Login = () => {
           // Signed in
           const user = userCredential.user;
           console.log(user);
+          setBusyIndicator(false)
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
           setErrorMessage(errorCode + "-" + errorMessage);
+          setBusyIndicator(false)
         });
     }
   };
@@ -75,6 +88,10 @@ const Login = () => {
   };
 
   return (
+    <>
+    {
+      busyIndicator && <BusyIndicator/>
+    }
     <div>
       <Header />
       <div className="fixed">
@@ -112,13 +129,18 @@ const Login = () => {
         <p className="text-red-500 font-bold text-lg py-2">{errorMessage}</p>
         <div className="flex justify-between text-gray-500">
           <h4 className="text-sm text-red-500">
-          <Checkbox {...label} defaultChecked sx={{
-          color: green[800],
-          '&.Mui-checked': {
-            color: green[600],
-          },
-        }} />
-             Remember Me</h4>
+            <Checkbox
+              {...label}
+              defaultChecked
+              sx={{
+                color: green[800],
+                "&.Mui-checked": {
+                  color: green[600],
+                },
+              }}
+            />
+            Remember Me
+          </h4>
           <h4 className="text-sm">Need Help?</h4>
         </div>
         <button
@@ -127,7 +149,7 @@ const Login = () => {
         >
           {isSignInForm ? "Sign In" : "Sign Up"}
         </button>
-        <GoogleAuth prefix={isSignInForm ? "Log in" : "Sign up"}/>
+        <GoogleAuth prefix={isSignInForm ? "Log in" : "Sign up"} />
         <p className="py-4 cursor-pointer" onClick={toggleSignInForm}>
           {isSignInForm
             ? "New to Netflix? SIGN UP"
@@ -139,6 +161,7 @@ const Login = () => {
         </p>
       </form>
     </div>
+    </>
   );
 };
 export default Login;

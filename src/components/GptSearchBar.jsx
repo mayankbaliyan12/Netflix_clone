@@ -4,8 +4,9 @@ import { useRef } from "react";
 import openai from "../utils/openai";
 import { API_OPTIONS } from "../utils/constants";
 import { addGptMovieResults } from "../utils/gptSlice";
+import BusyIndicator from "../utils/BusyIndicator";
 
-const GptSearchBar = () => {
+const GptSearchBar = ({busyIndicatorForGPTSearch,setBusyIndicatorForGPTSearch}) => {
   const dispatch = useDispatch();
   const langKey = useSelector((store) => store.config.lang);
   const searchText = useRef(null);
@@ -25,6 +26,7 @@ const GptSearchBar = () => {
   };
 
   const handleGptSearchClick = async () => {
+    setBusyIndicatorForGPTSearch(true);
     console.log(searchText.current.value);
 
     //Make an API call to GPT API and get Movie Results
@@ -33,15 +35,18 @@ const GptSearchBar = () => {
       "Act as a Movie Recommendation system and suggest some movies for the query : " +
       searchText.current.value +
       ". only give me names of 20 movies, comma seperated. like the example given ahead. Example Result: Gadar, Sholay, Golmaal, Koi Mil Gaya, Dhoom";
+    try {
+      const gptResults = await openai.chat.completions.create({
+        messages: [{ role: "user", content: gptQuery }],
+        model: "gpt-3.5-turbo",
+      });
+      var gptMovies = gptResults.choices?.[0].message?.content.split(",");
+    } catch {
+      var gptMovies = ["Hera Pheri","Andaz Apna Apna", "Golmaal: Fun Unlimited","3 Idiots","Chhichhore"]
+    }
 
-    const gptResults = await openai.chat.completions.create({
-      messages: [{ role: "user", content: gptQuery }],
-      model: "gpt-3.5-turbo",
-    });
-
-    //TODO: Error Handling
-    if (!gptResults.choices) return;
-    const gptMovies = gptResults.choices?.[0].message?.content.split(",");
+ 
+    
 
     //For Each Movies, search in TMDB API
     const promiseArray = gptMovies.map((movie) => searchMovieTMDB(movie));
@@ -54,9 +59,14 @@ const GptSearchBar = () => {
     dispatch(
       addGptMovieResults({ movieNames: gptMovies, movieResults: tmdbResults })
     );
+    setBusyIndicatorForGPTSearch(false);
   };
 
   return (
+    <>
+    {
+      busyIndicatorForGPTSearch && <BusyIndicator/>
+    }
     <div className="pt-[35%] md:pt-[10%] flex justify-center">
       <form
         className="w-full md:w-1/2 bg-black grid grid-cols-12"
@@ -76,6 +86,7 @@ const GptSearchBar = () => {
         </button>
       </form>
     </div>
+    </>
   );
 };
 export default GptSearchBar;

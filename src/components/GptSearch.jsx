@@ -1,8 +1,10 @@
 import GptSearchBar from "./GptSearchBar";
 import GptMovieSuggestions from "./GptMovieSuggestions";
 import { BG_URL } from "../utils/constants";
+import { useState } from "react";
 
 const GptSearch = () => {
+  const [busyIndicatorForGPTSearch, setBusyIndicatorForGPTSearch]= useState(false);
   return (
     <div>
       <div className="fixed -z-10">
@@ -12,8 +14,8 @@ const GptSearch = () => {
           alt="logo"
         />
       </div>
-      <GptSearchBar />
-      <GptMovieSuggestions />
+      <GptSearchBar busyIndicatorForGPTSearch={busyIndicatorForGPTSearch} setBusyIndicatorForGPTSearch={setBusyIndicatorForGPTSearch} />
+      <GptMovieSuggestions  />
     </div>
   );
 };

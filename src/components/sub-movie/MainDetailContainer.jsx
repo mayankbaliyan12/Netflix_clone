@@ -11,8 +11,7 @@ const MainDetailContainer = ({
   similarMovie,
   title,
 }) => {
-  console.log("SimilarMovie: ", similarMovie);
-  console.log("SimilarTV: ", similarTv);
+
 
   return (
     <div className="mt-[30px]">
